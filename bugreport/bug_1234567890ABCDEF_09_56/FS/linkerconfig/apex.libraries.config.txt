@@ -1,0 +1,9 @@
+jni com_android_appsearch libicing.so
+public com_android_art libnativehelper.so
+jni com_android_btservices libbluetooth_jni.so
+jni com_android_conscrypt libjavacrypto.so
+public com_android_i18n libicui18n.so:libicuuc.so:libicu.so
+public com_android_neuralnetworks libneuralnetworks.so
+jni com_android_os_statsd libstats_jni.so
+jni com_android_tethering libframework-connectivity-jni.so:libframework-connectivity-tiramisu-jni.so:libandroid_net_connectivity_com_android_net_module_util_jni.so:libservice-connectivity.so
+jni com_android_uwb libuwb_uci_jni_rust.so

@@ -1,0 +1,128 @@
+Beginning of dump -- C2ComponentStore: android.componentStore.mtk
+
+  Supported components:
+
+    name: c2.mtk.adpcm-dvi-ima.decoder
+    domain: 2
+    kind: 1
+    rank: 8
+    mediaType: audio/x-adpcm-dvi-ima
+    aliases:
+
+    name: c2.mtk.adpcm-ms.decoder
+    domain: 2
+    kind: 1
+    rank: 8
+    mediaType: audio/x-adpcm-ms
+    aliases:
+
+    name: c2.mtk.alac.decoder
+    domain: 2
+    kind: 1
+    rank: 8
+    mediaType: audio/alac
+    aliases:
+
+    name: c2.mtk.avc.decoder
+    domain: 1
+    kind: 1
+    rank: 512
+    mediaType: video/avc
+    aliases:
+
+    name: c2.mtk.avc.decoder.secure
+    domain: 1
+    kind: 1
+    rank: 512
+    mediaType: video/avc
+    aliases:
+
+    name: c2.mtk.avc.encoder
+    domain: 1
+    kind: 2
+    rank: 512
+    mediaType: video/avc
+    aliases:
+
+    name: c2.mtk.avc.encoder.secure
+    domain: 1
+    kind: 2
+    rank: 512
+    mediaType: video/avc
+    aliases:
+
+    name: c2.mtk.h263.decoder
+    domain: 1
+    kind: 1
+    rank: 512
+    mediaType: video/3gpp
+    aliases:
+
+    name: c2.mtk.heif.decoder
+    domain: 3
+    kind: 1
+    rank: 512
+    mediaType: image/vnd.android.heic
+    aliases:
+
+    name: c2.mtk.heif.encoder
+    domain: 3
+    kind: 2
+    rank: 512
+    mediaType: image/vnd.android.heic
+    aliases:
+
+    name: c2.mtk.hevc.decoder
+    domain: 1
+    kind: 1
+    rank: 512
+    mediaType: video/hevc
+    aliases:
+
+    name: c2.mtk.hevc.decoder.secure
+    domain: 1
+    kind: 1
+    rank: 512
+    mediaType: video/hevc
+    aliases:
+
+    name: c2.mtk.hevc.encoder
+    domain: 1
+    kind: 2
+    rank: 512
+    mediaType: video/hevc
+    aliases:
+
+    name: c2.mtk.mp3.decoder
+    domain: 2
+    kind: 1
+    rank: 8
+    mediaType: audio/mpeg
+    aliases:
+
+    name: c2.mtk.mpeg4.decoder
+    domain: 1
+    kind: 1
+    rank: 512
+    mediaType: video/mp4v-es
+    aliases:
+
+    name: c2.mtk.vp9.decoder
+    domain: 1
+    kind: 1
+    rank: 512
+    mediaType: video/x-vnd.on2.vp9
+    aliases:
+
+    name: c2.mtk.vp9.decoder.secure
+    domain: 1
+    kind: 1
+    rank: 512
+    mediaType: video/x-vnd.on2.vp9
+    aliases:
+
+  Active components:
+
+    NONE
+
+End of dump -- C2ComponentStore: android.componentStore.mtk

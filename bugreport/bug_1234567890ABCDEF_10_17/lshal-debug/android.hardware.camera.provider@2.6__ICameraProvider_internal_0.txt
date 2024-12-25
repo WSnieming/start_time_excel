@@ -1,0 +1,65 @@
+## Reporting + (01-06 02:15:16.937)
+## Camera Hal Service (camerahalserver pid:1016 64BIT) userdebug-build ## fd:8 options(#0) =
+  ICameraProviderCallback 0xb40000701ae00380 {.pid = 959, .ptr = 12970367433022991648, .arch = IS_64BIT}
+## Camera device manager (since 01-05 11:36:38.340) ##
+  Physical Devices: # 2
+    [00] -> orientation(wanted/setup)=( 90/90 ) BACK  hasFlashUnit:1 SENSOR_DRVNAME_S5KJNS_SUNNY_MAIN_III_MIPI_RAW [PhysEnumDevice:0xb400007024448eb0]
+    [01] -> orientation(wanted/setup)=(270/270) FRONT hasFlashUnit:0 SENSOR_DRVNAME_GC05A2_QTECH_FRONT_II_MIPI_RAW [PhysEnumDevice:0xb400007024448e60]
+  Virtual Devices: # 2
+    [device@3.6/internal/0] -> 00 torchModeStatus:AVAILABLE_OFF hasFlashUnit:1 [VirtEnumDevice:0xb4000070243ed9f0 IVirtualDevice:0xb4000070e1a218c0]
+    [device@3.6/internal/1] -> 01 torchModeStatus:NOT_AVAILABLE hasFlashUnit:0 [VirtEnumDevice:0xb400007024442710 IVirtualDevice:0xb4000070e1a21dc0]
+  Open Devices: # 0 (multi-opened maximum: # 2)
+
+################################################################################
+## 01-05 11:36:40.725 (1)
+## ICameraDevice
+## Camera device [0]
+## Camera device [device@3.6/internal/0]
+
+== state transition (most recent at bottom): Camera device ==
+  01-05 11:36:40.489 : -> initialized
+
+== error state (most recent at bottom): App Stream Manager ==
+  [no events yet]
+
+== warning state (most recent at bottom): App Stream Manager ==
+  [no events yet]
+
+== debug state (most recent at bottom): App Stream Manager ==
+  [no events yet]
+
+################################################################################
+## 01-05 11:36:41.503 (1)
+## ICameraDevice
+## Camera device [1]
+## Camera device [device@3.6/internal/1]
+
+== state transition (most recent at bottom): Camera device ==
+  01-05 11:36:40.714 : -> initialized
+
+== error state (most recent at bottom): App Stream Manager ==
+  [no events yet]
+
+== warning state (most recent at bottom): App Stream Manager ==
+  [no events yet]
+
+== debug state (most recent at bottom): App Stream Manager ==
+  [no events yet]
+
+################################################################################
+## 01-05 11:36:36.832 (0)
+## NSCam::ULog
+Dump time: 01-06 02:15:16.940418
+Flushed!
+
+################################################################################
+## 01-05 11:36:41.314 (0)
+## NSCam::v3::IStreamInfoPluginManager
+Registered Plugin(s):
+{ .pluginId=P1STT .options=1 .variantData<1> } [libmtkcam_streaminfo_plugin-p1stt.so 1:0x7fe1763b604f734d]
+
+################################################################################
+## 01-05 11:36:36.832 (-1)
+## debug
+---
+## Reporting done - (01-06 02:15:16.942)

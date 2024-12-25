@@ -1,17 +1,12 @@
-from openpyxl.chart import Reference, BarChart
-from openpyxl.workbook import Workbook
+import os
 
-wb = Workbook()
-ws = wb.active
 
-# 写入一列数数据
-for i in range(10):
-    ws.append([i])
+get_devices_command = os.popen('adb devices')
 
-print(ws)
-exit()
-values = Reference(ws, min_col=1, min_row=1, max_col=1, max_row=10)  # 选择图表的数据源
-chart = BarChart()  # 创建一个BarChart对象
-chart.add_data(values)  # 给BarChart对象添加数据源
-ws.add_chart(chart, "E15")  # 在工作表上添加图表，并指定图表左上角锚定的单元格。
-wb.save('result/实例.xlsx') # 保存工作薄
+devices_info = get_devices_command.read().strip('').split('\n')
+devices_list = list()
+for device in devices_info[1:]:
+    if len(device) > 2:
+        device_name = device.split('\t')[0]
+        devices_list.append(device_name)
+print(devices_list)

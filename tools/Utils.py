@@ -5,9 +5,8 @@
 '''
 import re
 import openpyxl
-from openpyxl.cell.text import RichText
+from PyInstaller.compat import system
 from openpyxl.chart import BarChart, Reference
-from openpyxl.chart.label import DataLabelList
 from openpyxl.styles import PatternFill, Alignment, Font
 import main
 from tools import properties_handler
@@ -16,7 +15,7 @@ from tools import properties_handler
 words = properties_handler.Properties('D:\Documents\Desktop\开机时间工具\TimeCatch\keywords.properties').getProperties()
 kernel_pattern = r"\d+\.\d{6}" # 匹配类似 "[    1.165322]", "[   13.371734]"的时间戳
 time_pattern = r"\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}"
-
+took_log = list()
 def find_kw(text, kw_list):
     for kw in kw_list:
         if kw in text:
@@ -31,14 +30,22 @@ def get_keywords_and_timestamp(texts):
     android_keywords = [words['android'].get(i) for i in words['android']]
     kernel_keywords = [words['kernel'].get(i) for i in words['kernel']]
     kernel_keywords_mtk = [words['kernelmtk'].get(i) for i in words['kernelmtk']]
+    kernel_alog_keys = [words['alog'].get(i) for i in words['alog']]
+
     android_dict = {key: value for key, value in zip(android_keywords, [-1] * len(android_keywords))}
     kernel_dict = {key: value for key, value in zip(kernel_keywords, [-1] * len(kernel_keywords))}
     kernel_mtk_dict = {key: value for key, value in zip(kernel_keywords_mtk, [-1] * len(kernel_keywords_mtk))}
+    kernel_alog_dict = {key: list() for key in kernel_alog_keys}
+
+    # 阶段关键字数量, 用于控制各阶段停止抓取时机
     process_android = len(android_keywords)
     process_kernel = len(kernel_keywords)
     process_kernel_mtk = len(kernel_keywords_mtk)
+    process_alog = len(kernel_alog_keys)
     device_name = 'unknown'
     platform_name = 'unknown'
+    kernel_start = 0
+    kernel_end = 0
     for text in texts:
         if device_name == 'unknown' and words['device']['name'] in text:
             device_name = text.split(" ")[-1].strip('\n')
@@ -50,39 +57,83 @@ def get_keywords_and_timestamp(texts):
                 platform_name = 'MTK'
                 continue
 
-        # kernel
-        res = find_kw(text, kernel_keywords)
-        timestamp = re.findall(kernel_pattern, text) # 非起始匹配
-        if res is not None and timestamp is not None and process_kernel > 0:
-            if kernel_dict[res] == -1:
-                kernel_dict[res] = int(float(timestamp[0])*1000)
-                kernel_keywords.remove(res)
-                process_kernel -= 1
+        if '--- KERNEL LOG' in text:
+            kernel_start = 1
+            continue
+
+        if 'was the duration of \'KERNEL LOG' in text:
+            kernel_end = 1
+            continue
+
+        # kernel 阶段 took 关键字生成单独的log, 去除 Looper 和 BpBinder
+        if kernel_start == 1 and kernel_end == 0:
+            if 'took' in text and 'Looper' not in text and 'BpBinder' not in text:
+                took_log.append(text)
                 continue
+
+        # kernel
+        if process_kernel > 0:
+            res = find_kw(text, kernel_keywords)
+            timestamp = re.findall(kernel_pattern, text) # 非起始匹配
+            if res is not None and timestamp is not None:
+                if kernel_dict[res] == -1:
+                    kernel_dict[res] = int(float(timestamp[0])*1000)
+                    kernel_keywords.remove(res)
+                    process_kernel -= 1
+                    continue
 
         # kernel_mtk
-        res = find_kw(text, kernel_keywords_mtk)
-        if res is not None and timestamp is not None and process_kernel_mtk > 0:
-            if kernel_mtk_dict[res] == -1:
-                kernel_mtk_dict[res] = int(float(timestamp[0])*1000)
-                kernel_keywords_mtk.remove(res)
-                process_kernel_mtk -= 1
-                continue
+        if process_kernel_mtk > 0:
+            res = find_kw(text, kernel_keywords_mtk)
+            timestamp = re.findall(kernel_pattern, text)
+            if res is not None and timestamp is not None:
+                if kernel_mtk_dict[res] == -1:
+                    kernel_mtk_dict[res] = int(float(timestamp[0])*1000)
+                    kernel_keywords_mtk.remove(res)
+                    process_kernel_mtk -= 1
+                    continue
 
         # android
-        res = find_kw(text, android_keywords)
-        timestamp = re.match(time_pattern, text)  # 起始匹配
-        if res is not None and timestamp is not None and process_android > 0:
-            if android_dict[res] == -1:
-                android_dict[res] = int(text.split(' ')[-1].strip('\n'))
-                android_keywords.remove(res)
-                process_android -= 1
+        if process_android > 0:
+            res = find_kw(text, android_keywords)
+            timestamp = re.match(time_pattern, text)  # 起始匹配
+            if res is not None and timestamp is not None:
+                if android_dict[res] == -1:
+                    android_dict[res] = int(text.split(' ')[-1].strip('\n'))
+                    android_keywords.remove(res)
+                    process_android -= 1
+                    continue
+
+        # 抓关键log信息
+        if process_alog > 0:
+            res = find_kw(text, kernel_alog_keys)
+            if res is None:
                 continue
-    # 将 boot_progress_start 挪到 kernel
-    # kernel_dict[list(android_dict.keys())[0]] = android_dict[list(android_dict.keys())[0]]
-    # android_dict.pop(list(android_dict.keys())[0])
-    #print(kernel_mtk_dict)
-    return kernel_dict, android_dict, [device_name, platform_name], kernel_mtk_dict
+            elif res == 'Zygote  : ...preloaded':
+                kernel_alog_dict[res].append(text.split('I ')[-1])
+                if len(kernel_alog_dict[res]) >= 6:
+                    kernel_alog_keys.remove(res)
+            elif res == 'PackageManager: Finished':
+                if 'non-system' in text:
+                    kernel_alog_dict[res].append(text.split('I ')[-1])
+                elif  'system' in text:
+                    kernel_alog_dict[res].append(text.split('I ')[-1])
+                else:
+                    pass
+                if len(kernel_alog_dict[res]) >= 2:
+                    kernel_alog_keys.remove(res)
+            elif res == 'wm_activity_launch_time':
+                if 'com.miui.home' in text or 'launcher' in text:
+                    kernel_alog_dict[res].append(text.split('I ')[-1])
+                    kernel_alog_keys.remove(res)
+            elif res == 'Setting mKeyguardDrawComplete':
+                kernel_alog_dict[res].append(text.split('W ')[-1])
+                if len(kernel_alog_dict[res]) >= 3:
+                    kernel_alog_keys.remove(res)
+    print(words['alog'])
+    print(kernel_alog_keys)
+    exit()
+    return kernel_dict, android_dict, [device_name, platform_name], kernel_mtk_dict, kernel_alog_dict
 
 '''
 @params: time_dict: 记录关键字和对应时间节点的字典对象
@@ -110,7 +161,36 @@ def dict_to_xlsx(duration_dict_1, duration_dict_2, sheet_name, wb):
     #wb.save(file_path + t + '.xlsx')
 
 
-def dict_to_xlsx_contrast(sheet_obj, title, duration_dict_1, duration_dict_2):
+def dict_to_xlsx_OneDevices(sheet_obj, title, duration_dict):
+    write_to_xlsx_column(title, sheet_obj, row_idx=1, column_start_idx='A')
+    k, d = duration_dict
+    k_idx = len(k)
+    total_time = d[list(d.keys())[-1]]
+    k.update(d)
+    dur_dict = get_time_duration(k)
+    keyword_list = list(k.keys())
+    write_to_xlsx_column(keyword_list, sheet_obj, row_start_idx=2, column_idx='B')
+    write_to_xlsx_column(list(dur_dict.values()), sheet_obj, row_start_idx=2, column_idx='C')
+    # 格式调整
+    fill1 = PatternFill(fill_type='solid', start_color='ADD8E6', end_color='ADD8E6')  # 蔚蓝色
+    fill2 = PatternFill(fill_type='solid', start_color='F0E68C', end_color='F0E68C')  # 黄色
+    sheet_obj.cell(row=2, column=1).value = 'kernel'
+    sheet_obj.cell(row=2, column=1).fill = fill1
+    sheet_obj.merge_cells(range_string='A2:A' + str(2 + k_idx - 1))
+    sheet_obj.merge_cells(range_string='A' + str(2 + k_idx) + ':A' + str(1 + len(dur_dict)))
+    sheet_obj.cell(row=2 + k_idx, column=1).value = 'android'
+    sheet_obj.cell(row=2 + k_idx, column=1).fill = fill2
+    # 设置 列 宽
+    sheet_obj.column_dimensions['A'].width = 15
+    sheet_obj.column_dimensions['B'].width = 37
+    sheet_obj.column_dimensions['C'].width = 12
+
+    cell_alignment(sheet_obj, Alignment(horizontal='center', vertical='center'), columns_start='A', columns_end='A')
+    cell_alignment(sheet_obj, Alignment(horizontal='center'), columns_start='C', columns_end='C')
+
+
+
+def dict_to_xlsx_contrast(sheet_obj, title, duration_dict_1, duration_dict_2, alog_dict):
 
     write_to_xlsx_column(title, sheet_obj, row_idx=1, column_start_idx='A')
     k1, d1 = duration_dict_1
@@ -120,11 +200,16 @@ def dict_to_xlsx_contrast(sheet_obj, title, duration_dict_1, duration_dict_2):
     k1.update(d1)
     d1_dur = get_time_duration(k1)
     write_to_xlsx_column(list(d1_dur.values()), sheet_obj, row_start_idx=2, column_idx='C')
-
+    to_idx = list(k1.keys())
+    alog_dict1, alog_dict2 = alog_dict
+    print(to_idx)
+    print(alog_dict1)
+    exit()
     k2, d2 = duration_dict_2
     k2_total = k2[list(k2.keys())[-1]]
     d2_total = d2[list(d2.keys())[-1]]
     k2.update(d2)
+
     d2_dur = get_time_duration(k2)
     write_to_xlsx_column(list(d2_dur.values()), sheet_obj, row_start_idx=2, column_idx='D')
 
@@ -191,9 +276,13 @@ def write_function_to_xlsx(sheet_obj, r_start_idx, r_end_idx, c_start_idx, c_end
                 data2 = sheet_obj[end_column_name + str(cur_row)].value
                 if type(data1)==int and type(data2)==int and data1-data2 < 300:
                     pass
+                elif type(data1)!=int or type(data2)!=int:
+                    sheet_obj.cell(row=cur_row, column=c_end_idx + 2).fill \
+                        = PatternFill(fill_type='solid', start_color='FF7F50', end_color='FF4500')  # 橙红色
                 else:
                     sheet_obj.cell(row=cur_row, column=c_end_idx + 2).fill \
                         = PatternFill(fill_type='solid', start_color='FF7F50', end_color='FF4500')  # 橙红色
+                    #sheet_obj.cell(row=cur_row, column=c_end_idx + 3).value =
                 sheet_obj[result_column_name+str(cur_row)]\
                     = '=' + start_column_name + str(cur_row) + signal + end_column_name + str(cur_row)
 
@@ -248,8 +337,6 @@ def general_Bar_chart(dict1, dict2, sheet_obj):
     sheet_obj.add_chart(bar_chart, 'A'+str(len(x1_axis)+5))
 
 
-
-
 '''
 # excel 表格生成
 @params1: file1, file2       #[kernel_dic, android_dict, (device_name, device_platform), kernel_dict]时间
@@ -262,8 +349,8 @@ def xlsx_general(file_1, file_2, save_path):
 
     # d1_k, d1_b, d1_name = get_keywords_and_timestamp(d1)
     # d2_k, d2_b, d2_name = get_keywords_and_timestamp(d2)
-    d1_k, d1_b, devcies_info1, kernel_mtk1 = file_1
-    d2_k, d2_b, devcies_info2, kernel_mtk2 = file_2
+    d1_k, d1_b, devcies_info1, kernel_mtk1, alog_dict1 = file_1
+    d2_k, d2_b, devcies_info2, kernel_mtk2, alog_dict2 = file_2
     d1_name, d1_platform = devcies_info1
     d2_name, d2_platform = devcies_info2
     if d1_platform == d2_platform == 'MTK':
@@ -273,16 +360,28 @@ def xlsx_general(file_1, file_2, save_path):
     sheet_kernel_android = wb.active
     sheet_kernel_android.title = 'kernel_android'
     dict_to_xlsx_contrast(sheet_kernel_android, ["阶段", "关键节点", d1_name, d2_name, "差值(ms)"],
-                          [d1_k, d1_b], [d2_k, d2_b])
+                          [d1_k, d1_b], [d2_k, d2_b], [alog_dict1, alog_dict2])
     general_Bar_chart(d1_k, d2_k, sheet_kernel_android) # 经过前面的过程，此时 d1_k已经包含了kernel和Android整个阶段的耗时
     wb.save(save_path)
 
+def one_devices_excel(file, save_path):
+    k_dict, a_dict, devcies_info, kernel_mtk = file
+    name, platform = devcies_info
+    if platform == 'MTK':
+        k_dict.update(kernel_mtk)
+    wb = openpyxl.Workbook()
+    sheet_kernel_android = wb.active
+    sheet_kernel_android.title = 'on_devices'
+    #
+    dict_to_xlsx_OneDevices(sheet_kernel_android, ["阶段", "关键节点", name+"阶段耗时(ms)"],
+                          [k_dict, a_dict])
+    wb.save(save_path)
 
 def load_data(file_name):
     with open(file_name, 'Ur', encoding='utf-8') as f:
         return f.readlines()
 
 if __name__ == '__main__':
-    m = main.Main('D:/Documents/Desktop/AI/bugreport-warm.txt', 'D:/Documents/Desktop/AI/bugreport-V.txt')
+    m = main.Main('D:/Documents/Desktop/AI/bugreport-S.txt', 'D:/Documents/Desktop/AI/bugreport-warm.txt')
     m.general_android_result()
     # write_function_to_xlsx(2, 8, 3, 4, '-', 1)

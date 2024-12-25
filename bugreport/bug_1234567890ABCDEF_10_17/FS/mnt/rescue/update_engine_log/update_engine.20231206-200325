@@ -1,0 +1,39 @@
+[1206/200325.827195] [INFO:main.cc(55)] A/B Update Engine starting
+[1206/200325.899101] [INFO:boot_control_android.cc(69)] Loaded boot control hidl hal.
+[1206/200325.921887] [INFO:daemon_state_android.cc(44)] Booted in dev mode.
+[1206/200325.960749] [ERROR:update_attempter_android.cc(941)] prefs_->GetInt64(kPrefsPreviousSlot, &previous_slot) failed.
+[1206/200325.977374] [INFO:update_attempter_android.cc(197)] OTAResult::NOT_ATTEMPTED
+[1206/200325.983950] [INFO:update_attempter_android.cc(1267)] Scheduling CleanupPreviousUpdateAction.
+[1206/200326.020879] [INFO:action_processor.cc(51)] ActionProcessor: starting CleanupPreviousUpdateAction
+[1206/200326.067072] [INFO:cleanup_previous_update_action.cc(150)] Starting/resuming CleanupPreviousUpdateAction
+[1206/200326.093281] [INFO:cleanup_previous_update_action.cc(125)] CleanupPreviousUpdateAction scheduled task ID 1 for WaitBootCompleted
+[1206/200328.090454] [INFO:cleanup_previous_update_action.cc(113)] Executing task 1
+[1206/200328.094116] [INFO:cleanup_previous_update_action.cc(125)] CleanupPreviousUpdateAction scheduled task ID 3 for WaitBootCompleted
+[1206/200330.097618] [INFO:cleanup_previous_update_action.cc(113)] Executing task 3
+[1206/200330.101679] [INFO:cleanup_previous_update_action.cc(125)] CleanupPreviousUpdateAction scheduled task ID 4 for WaitBootCompleted
+[1206/200332.105565] [INFO:cleanup_previous_update_action.cc(113)] Executing task 4
+[1206/200332.110538] [INFO:cleanup_previous_update_action.cc(125)] CleanupPreviousUpdateAction scheduled task ID 5 for WaitBootCompleted
+[1206/200334.113221] [INFO:cleanup_previous_update_action.cc(113)] Executing task 5
+[1206/200334.118005] [INFO:cleanup_previous_update_action.cc(125)] CleanupPreviousUpdateAction scheduled task ID 6 for WaitBootCompleted
+[1206/200336.121420] [INFO:cleanup_previous_update_action.cc(113)] Executing task 6
+[1206/200336.133518] [INFO:cleanup_previous_update_action.cc(125)] CleanupPreviousUpdateAction scheduled task ID 7 for WaitBootCompleted
+[1206/200338.134266] [INFO:cleanup_previous_update_action.cc(113)] Executing task 7
+[1206/200338.143374] [INFO:cleanup_previous_update_action.cc(190)] Boot completed, waiting on markBootSuccessful()
+[1206/200338.153227] [INFO:snapshot.cpp(3775)] EnsureMetadataMounted does nothing in Android mode.
+[1206/200338.159342] [INFO:snapshot_stats.cpp(37)] Read merge statistics file failed: No such file or directory
+[1206/200338.179105] [INFO:cleanup_previous_update_action.cc(262)] Waiting for any previous merge request to complete. This can take up to several minutes.
+[1206/200338.191087] [ERROR:snapshot.cpp(2884)] Read state file failed: No such file or directory
+[1206/200338.208630] [ERROR:snapshot.cpp(2884)] Read state file failed: No such file or directory
+[1206/200338.216978] [ERROR:snapshot.cpp(2884)] Read state file failed: No such file or directory
+[1206/200338.226716] [INFO:snapshot.cpp(1047)] CheckMergeState for snapshots returned: 0
+[1206/200338.233545] [INFO:snapshot.cpp(1019)] ProcessUpdateState handling state: 0
+[1206/200338.239091] [INFO:cleanup_previous_update_action.cc(302)] Can't find any snapshot to merge.
+[1206/200338.245389] [ERROR:snapshot.cpp(2884)] Read state file failed: No such file or directory
+[1206/200338.252465] [INFO:cleanup_previous_update_action.cc(131)] Stopping/suspending/completing CleanupPreviousUpdateAction
+[1206/200338.259383] [INFO:cleanup_previous_update_action.cc(484)] Not reporting merge stats because state is None
+[1206/200338.265763] [INFO:cleanup_previous_update_action.cc(131)] Stopping/suspending/completing CleanupPreviousUpdateAction
+[1206/200338.271301] [INFO:action_processor.cc(116)] ActionProcessor: finished last action CleanupPreviousUpdateAction with code ErrorCode::kSuccess
+[1206/200338.277371] [INFO:update_attempter_android.cc(572)] Processing Done.
+[1206/200338.283465] [INFO:update_attempter_android.cc(831)] Clearing update complete marker.
+[1206/200338.293844] [INFO:update_attempter_android.cc(727)] Terminating cleanup previous update.
+[1206/222024.138833] [INFO:main.cc(72)] A/B Update Engine terminating with exit code 0
